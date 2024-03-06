@@ -9,6 +9,7 @@ from modules.convert import Convert
 from modules.ergast import Ergast
 from modules.icheckmovies import ICheckMovies
 from modules.imdb import IMDb
+from modules.doesthedogdie import DogDieChecker
 from modules.github import GitHub
 from modules.letterboxd import Letterboxd
 from modules.mal import MyAnimeList
@@ -47,6 +48,11 @@ imdb_label_options = {
     "mild": "Add IMDb Parental Labels for Mild, Moderate, or Severe",
     "moderate": "Add IMDb Parental Labels for Moderate or Severe",
     "severe": "Add IMDb Parental Labels for Severe"
+}
+dddd_label_options = {
+    "dog": "Does the dog die",
+    "default": "Default trigger warnings",
+    "all": "Label all triggers (almost 200)"
 }
 mass_genre_options = {
     "lock": "Lock Genre", "unlock": "Unlock Genre", "remove": "Remove and Lock Genre", "reset": "Remove and Unlock Genre",
@@ -118,7 +124,7 @@ library_operations = {
     "mass_critic_rating_update": mass_rating_options, "mass_episode_critic_rating_update": mass_episode_rating_options,
     "mass_user_rating_update": mass_rating_options, "mass_episode_user_rating_update": mass_episode_rating_options,
     "mass_original_title_update": mass_original_title_options, "mass_originally_available_update": mass_available_options,
-    "mass_imdb_parental_labels": imdb_label_options,
+    "mass_imdb_parental_labels": imdb_label_options, "mass_does_the_dog_labels": dddd_label_options,
     "mass_collection_mode": "mass_collection_mode", "mass_poster_update": "dict", "mass_background_update": "dict",
     "metadata_backup": "dict", "delete_collections": "dict", "genre_mapper": "dict", "content_rating_mapper": "dict",
 }
@@ -722,8 +728,14 @@ class ConfigFile:
                         logger.info("")
                         logger.separator(f"Skipping {e} Playlist File")
 
+            self.general["doesthedogdie"] = {
+                "apikey": check_for_attribute(self.data, "apikey", parent="doesthedogdie", default_is_none=True)
+            }
+
             self.TVDb = TVDb(self, self.general["tvdb_language"], self.general["cache_expiration"])
             self.IMDb = IMDb(self)
+            if self.general["doesthedogdie"]["apikey"]:
+                self.DogDieChecker = DogDieChecker(self, self.general["doesthedogdie"]["apikey"])
             self.Convert = Convert(self)
             self.AniList = AniList(self)
             self.ICheckMovies = ICheckMovies(self)
